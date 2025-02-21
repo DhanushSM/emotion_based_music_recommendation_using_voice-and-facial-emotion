@@ -1,0 +1,8 @@
+flask
+flask-cors
+speechrecognition
+transformers
+torch
+opencv-python-headless
+deepface
+numpy
