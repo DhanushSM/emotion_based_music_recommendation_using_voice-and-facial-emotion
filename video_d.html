@@ -1,0 +1,141 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Emotion Detection</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"></link>
+</head>
+<body class="bg-gradient-to-r from-blue-100 to-blue-300 min-h-screen flex items-center justify-center p-4">
+    <div class="container max-w-2xl bg-white rounded-2xl shadow-lg p-6">
+        <h1 class="text-3xl font-bold text-center text-gray-800 mb-6">Emotion Detection</h1>
+        <div class="video-container relative bg-gray-100 rounded-lg overflow-hidden mb-6">
+            <video id="video" class="w-full transform scale-x-[-1]"></video>
+        </div>
+        <div class="button-group flex flex-col sm:flex-row gap-4 justify-center mb-6">
+            <button id="start_button" onclick="startDetection()" class="bg-blue-500 text-white py-2 px-4 rounded-lg flex items-center justify-center gap-2 hover:bg-blue-600 transition">
+                <i class="fas fa-video"></i> Start Detection
+            </button>
+            <button id="capture_button" onclick="captureEmotion()" class="bg-green-500 text-white py-2 px-4 rounded-lg flex items-center justify-center gap-2 hover:bg-green-600 transition hidden">
+                <i class="fas fa-camera"></i> Capture Emotion
+            </button>
+            <button class="secondary bg-gray-500 text-white py-2 px-4 rounded-lg flex items-center justify-center gap-2 hover:bg-gray-600 transition" onclick="detectAgain()">
+                <i class="fas fa-redo"></i> Detect Again
+            </button>
+        </div>
+        <div id="loading" class="loading text-center text-gray-600 py-4 hidden">
+            Analyzing your emotion...
+        </div>
+        <div id="emotion_result" class="text-center text-xl mb-6 py-4 bg-blue-100 rounded-lg text-blue-800"></div>
+        <div id="recommendations" class="recommendations"></div>
+    </div>
+
+    <script>
+        let videoStream;
+
+        function startDetection() {
+            startCamera();
+            document.getElementById('start_button').classList.add('hidden');
+            document.getElementById('capture_button').classList.remove('hidden');
+        }
+
+        function startCamera() {
+            const video = document.querySelector('video');
+            navigator.mediaDevices.getUserMedia({ video: true })
+                .then(stream => {
+                    videoStream = stream;
+                    video.srcObject = stream;
+                    video.play();
+                })
+                .catch(err => {
+                    showError("Error accessing the camera. Please check permissions.");
+                    console.error("Error accessing the camera: ", err);
+                });
+        }
+
+        function stopCamera() {
+            if (videoStream) {
+                let tracks = videoStream.getTracks();
+                tracks.forEach(track => track.stop());
+                videoStream = null;
+            }
+        }
+
+        function showError(message) {
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'bg-red-100 text-red-800 p-4 rounded-lg mb-4';
+            errorDiv.textContent = message;
+            document.querySelector('.video-container').after(errorDiv);
+            setTimeout(() => errorDiv.remove(), 5000);
+        }
+
+        function captureEmotion() {
+            const loading = document.getElementById('loading');
+            loading.classList.remove('hidden');
+
+            const video = document.querySelector('video');
+            const canvas = document.createElement('canvas');
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
+            const imageData = canvas.toDataURL('image/jpeg');
+            const base64Image = imageData.split(',')[1];
+
+            fetch('/detect_emotion', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ image: base64Image }),
+            })
+                .then(response => response.json())
+                .then(data => {
+                    loading.classList.add('hidden');
+                    document.getElementById('emotion_result').innerHTML = 
+                        `<i class="fas fa-heart"></i> Detected Emotion: <strong>${data.emotion}</strong>`;
+                    
+                    if (data.recommendations.length > 0) {
+                        const recommendationsTable = data.recommendations.map(rec => 
+                            `<tr class="hover:bg-gray-100 transition">
+                                <td class="py-2 px-4"><i class="fas fa-tag"></i> ${rec.category}</td>
+                                <td class="py-2 px-4"><a href="${rec.link}" target="_blank" class="text-blue-500 hover:underline">
+                                    <i class="fas fa-external-link-alt"></i> ${rec.title}
+                                </a></td>
+                            </tr>`
+                        ).join('');
+                        
+                        document.getElementById('recommendations').innerHTML = 
+                            `<table class="w-full border-collapse bg-white rounded-lg overflow-hidden shadow-lg">
+                                <thead>
+                                    <tr class="bg-blue-500 text-white">
+                                        <th class="py-2 px-4">Category</th>
+                                        <th class="py-2 px-4">Recommendation</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${recommendationsTable}
+                                </tbody>
+                            </table>`;
+                    } else {
+                        document.getElementById('recommendations').innerHTML = 
+                            '<div class="text-center text-gray-600">No recommendations available</div>';
+                    }
+                    stopCamera();
+                })
+                .catch(error => {
+                    loading.classList.add('hidden');
+                    showError('Error detecting emotion. Please try again.');
+                    console.error('Error:', error);
+                });
+        }
+
+        function detectAgain() {
+            document.getElementById('emotion_result').innerHTML = '';
+            document.getElementById('recommendations').innerHTML = '';
+            document.getElementById('start_button').classList.remove('hidden');
+            document.getElementById('capture_button').classList.add('hidden');
+            startDetection();
+        }
+    </script>
+</body>
+</html>

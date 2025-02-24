@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <title>Emotion-Based Music Suggestion System</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet"/>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
+    body {
+      font-family: 'Roboto', sans-serif;
+    }
+    .gradient-overlay {
+      position: relative;
+      overflow: hidden;
+    }
+    .gradient-overlay::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+    .gradient-overlay:hover::before {
+      opacity: 1;
+    }
+    .card-hover-effect {
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .card-hover-effect:hover {
+      transform: translateY(-10px);
+      box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+    }
+  </style>
+</head>
+<body class="bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 min-h-screen flex items-center justify-center">
+  <div class="text-center text-white px-4">
+    <h1 class="text-4xl md:text-6xl font-bold mb-8 bg-gradient-to-r from-purple-400 via-pink-500 to-red-500 bg-clip-text text-transparent">
+      Emotion-Based Music Suggestion System
+    </h1>
+    <div class="flex flex-col md:flex-row gap-8 justify-center">
+      <!-- Camera-Based Detection Card -->
+      <a href="/video" class="block">
+        <div class="gradient-overlay bg-gray-800 p-8 rounded-lg shadow-lg card-hover-effect cursor-pointer relative">
+          <div class="absolute inset-0 bg-gradient-to-r from-purple-600 to-pink-600 opacity-0 hover:opacity-20 transition-opacity duration-300 rounded-lg"></div>
+          <img alt="Camera icon representing camera-based detection" class="mx-auto mb-6 w-24 h-24" src="https://storage.googleapis.com/a1aa/image/0eauGzToC0uMm0ZmIlJWDYrHSu8DLijAHn6HFpkP9Uk.jpg"/>
+          <h2 class="text-2xl font-semibold mb-4">Camera-Based Detection</h2>
+          <p class="text-gray-400">Use your camera to detect your emotions and get personalized music suggestions.</p>
+        </div>
+      </a>
+      
+      <!-- Voice-Based Detection Card -->
+      <a href="/voice" class="block">
+        <div class="gradient-overlay bg-gray-800 p-8 rounded-lg shadow-lg card-hover-effect cursor-pointer relative">
+          <div class="absolute inset-0 bg-gradient-to-r from-blue-600 to-teal-600 opacity-0 hover:opacity-20 transition-opacity duration-300 rounded-lg"></div>
+          <img alt="Microphone icon representing voice-based detection" class="mx-auto mb-6 w-24 h-24" src="https://storage.googleapis.com/a1aa/image/ubEju7aYNTDXJ1xPS33OqZCscbA9peoVCJ4tfVxBkZo.jpg"/>
+          <h2 class="text-2xl font-semibold mb-4">Voice-Based Detection</h2>
+          <p class="text-gray-400">Use your voice to detect your emotions and get tailored music recommendations.</p>
+        </div>
+      </a>
+    </div>
+  </div>
+</body>
+</html>
